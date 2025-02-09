@@ -1,0 +1,22 @@
+export const countries = [
+  { value: "TR", label: "Turkey" },
+  { value: "US", label: "United States of America" },
+  { value: "GB", label: "United Kingdom" },
+  { value: "DE", label: "Germany" },
+  { value: "FR", label: "France" },
+  { value: "IT", label: "Italy" },
+  { value: "ES", label: "Spain" },
+  { value: "NL", label: "Netherlands" },
+  { value: "BE", label: "Belgium" },
+  { value: "CH", label: "Switzerland" },
+  { value: "AT", label: "Austria" },
+  { value: "SE", label: "Sweden" },
+  { value: "NO", label: "Norway" },
+  { value: "DK", label: "Denmark" },
+  { value: "FI", label: "Finland" },
+  { value: "IE", label: "Ireland" },
+  { value: "PT", label: "Portugal" },
+  { value: "GR", label: "Greece" },
+  { value: "PL", label: "Poland" },
+  { value: "CZ", label: "Czech Republic" }
+]; 
