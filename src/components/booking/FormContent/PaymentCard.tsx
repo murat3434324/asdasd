@@ -235,21 +235,21 @@ const PaymentCard = () => {
       </p>
       <div className="border-y-[1px] border-border">
         <div className="grid grid-cols-3">
-          <Image
-            src={TrustPilot}
-            alt="TrustPilot"
-            className="w-14 h-14 xl:w-20 xl:h-20"
-          />
-          <Image
-            src={TrustPilot}
-            alt="TrustPilot"
-            className="w-14 h-14 xl:w-20 xl:h-20"
-          />
-          <Image
-            src={TrustPilot}
-            alt="TrustPilot"
-            className="w-14 h-14 xl:w-20 xl:h-20"
-          />
+          {[1, 2, 3].map((index) => (
+            <a
+              key={index}
+              href="https://www.trustpilot.com/review/fareshope.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="cursor-pointer"
+            >
+              <Image
+                src={TrustPilot}
+                alt="TrustPilot"
+                className="w-14 h-14 xl:w-20 xl:h-20"
+              />
+            </a>
+          ))}
         </div>
       </div>
       <div className="text-sm text-muted-foreground flex flex-col">
