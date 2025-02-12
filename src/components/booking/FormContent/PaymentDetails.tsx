@@ -601,11 +601,19 @@ export default function PaymentDetails() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormInput
+                     <FormInput
                         type="text"
                         label="Expiry date"
                         required
                         {...methods.register("cardDetails.expiryDate")}
+                        onChange={(e) => {
+                          let value = e.target.value.replace(/\D/g, '');
+                          if (value.length >= 2) {
+                            value = value.slice(0, 2) + '/' + value.slice(2, 4);
+                          }
+                          methods.setValue('cardDetails.expiryDate', value);
+                        }}
+                        maxLength={5}
                         error={
                           (errors as FormErrors)?.cardDetails?.expiryDate
                             ?.message

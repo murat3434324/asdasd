@@ -322,47 +322,55 @@ export default function Overview() {
         )}
       </div>
 
-      {/* Terms and Conditions Checkboxes */}
-      <div className="space-y-4 border border-border rounded-sm p-4 bg-white">
-        <div className="flex items-start gap-2">
-          <input
-            type="checkbox"
-            id="payment-agreement"
-            checked={formData.payment.paymentAccepted}
-            onChange={(e) => handlePaymentAcceptedChange(e.target.checked)}
-            className="mt-1"
-          />
-          <label htmlFor="payment-agreement" className="text-sm text-gray-700">
-            I acknowledge that my card will be charged for the total amount
-            shown above, which includes the flight/service fee processed by
-            business-skies.com and all applicable airline and government taxes.
-          </label>
-        </div>
+    {/* Terms and Conditions Checkboxes */}
+<div className="space-y-4 border border-border rounded-sm p-4 bg-white">
+  <div className="flex items-start gap-2">
+    <input
+      type="checkbox"
+      id="payment-agreement"
+      checked={formData.payment.paymentAccepted}
+      onChange={(e) => handlePaymentAcceptedChange(e.target.checked)}
+      className="mt-1"
+    />
+    <label htmlFor="payment-agreement" className="text-sm text-gray-700">
+      I acknowledge that my card will be charged for the total amount
+      shown above, which includes the flight/service fee processed by
+      <a href="/about" className="text-primary hover:underline mx-1">
+        fareshopes.com
+      </a>
+      and all applicable airline and government taxes.
+    </label>
+  </div>
 
-        <div className="flex items-start gap-2">
-          <input
-            type="checkbox"
-            id="terms-agreement"
-            checked={formData.payment.termsAccepted}
-            onChange={(e) => handleTermsAcceptedChange(e.target.checked)}
-            className="mt-1"
-          />
-          <label htmlFor="terms-agreement" className="text-sm text-gray-700">
-            <span>I have read and accept business-skies.com&apos;s </span>
-            <span className="text-primary hover:underline">
-              Terms and Conditions
-            </span>
-
-            <span> and </span>
-            <span className="text-primary hover:underline">Privacy Policy</span>
-            <span>
-              . I also understand that cancellations, changes, and refunds may
-              not be possible before and/or after departure. All sales are final
-              and non-refundable/non-transferable.
-            </span>
-          </label>
-        </div>
-      </div>
+  <div className="flex items-start gap-2">
+    <input
+      type="checkbox"
+      id="terms-agreement"
+      checked={formData.payment.termsAccepted}
+      onChange={(e) => handleTermsAcceptedChange(e.target.checked)}
+      className="mt-1"
+    />
+    <label htmlFor="terms-agreement" className="text-sm text-gray-700">
+      <span>I have read and accept </span>
+      <a href="/about" className="text-primary hover:underline">
+        fareshopes.com
+      </a>
+      <span>&apos;s </span>
+      <a href="/terms" className="text-primary hover:underline">
+        Terms and Conditions
+      </a>
+      <span> and </span>
+      <a href="/privacy" className="text-primary hover:underline">
+        Privacy Policy
+      </a>
+      <span>
+        . I also understand that cancellations, changes, and refunds may
+        not be possible before and/or after departure. All sales are final
+        and non-refundable/non-transferable.
+      </span>
+    </label>
+  </div>
+</div>
     </div>
   );
 }
