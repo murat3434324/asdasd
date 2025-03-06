@@ -216,7 +216,7 @@ export const BookingProvider = ({
       tipAmount = paymentData.tip;
     }
 
-    return basePrice + taxes + extrasTotal + tipAmount;
+    return basePrice + extrasTotal + tipAmount;
   }, [
     bookingData.template.total_price,
     bookingData.template.taxes,
