@@ -198,7 +198,6 @@ export const BookingProvider = ({
 
   const calculateTotalPrice = useCallback(() => {
     const basePrice = parseFloat(bookingData.template.total_price);
-    const taxes = parseFloat(bookingData.template.taxes);
 
     let extrasTotal = 0;
     if (
