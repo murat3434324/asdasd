@@ -1,16 +1,122 @@
 "use client";
 
-import { FlightType } from "@/types/Flight";
+import React, { useState } from "react";
 import { ArrowRightIcon, ChevronUp, Square } from "lucide-react";
 import { GiAirplaneArrival } from "react-icons/gi";
 import Image from "next/image";
-import { useState } from "react";
-import { formatDate, formatTime, getTotalDuration } from "@/utils/dateUtils";
 
-export default function ItineraryCard({ flight }: { flight?: FlightType }) {
-  const [showDetails, setShowDetails] = useState(false);
+// Define types based on the data structure
+interface AirCompany {
+  name: string;
+  logo: string;
+}
 
-  const getCabinClass = (flight: FlightType) => {
+interface FlightConnection {
+  id: number;
+  from_city: string;
+  from_airport_code: string;
+  to_city: string;
+  to_airport_code: string;
+  departure_date: string;
+  arrival_date: string;
+  travel_time_hours: number;
+  travel_time_minutes: number;
+  airline_code: string;
+  flight_number: string;
+  aircraft_type: string;
+  cabin_class: string;
+  air_company: AirCompany;
+}
+
+interface Flight {
+  id: number;
+  flight_type: 'departure' | 'return';
+  from_city: string;
+  from_airport_code: string;
+  to_city: string;
+  to_airport_code: string;
+  departure_date: string;
+  arrival_date: string;
+  travel_time_hours: number;
+  travel_time_minutes: number;
+  airline_code: string;
+  flight_number: string;
+  aircraft_type: string;
+  cabin_class: string;
+  is_connection: boolean;
+  air_company: AirCompany;
+  connections: FlightConnection[];
+}
+
+interface FlightSegmentProps {
+  flight: Flight | FlightConnection;
+  isLast: boolean;
+  calculateDuration: (startDate: string, endDate: string) => string;
+  formatDate: (dateString: string) => string;
+  formatTime: (dateString: string) => string;
+}
+
+interface LayoverSegmentProps {
+  prevFlight: Flight | FlightConnection;
+  nextFlight: Flight | FlightConnection;
+  calculateLayover: (flight1: Flight | FlightConnection, flight2: Flight | FlightConnection) => string;
+}
+
+interface DetailsProps {
+  flight: Flight;
+  calculateDuration: (startDate: string, endDate: string) => string;
+  calculateLayover: (flight1: Flight | FlightConnection, flight2: Flight | FlightConnection) => string;
+  formatDate: (dateString: string) => string;
+  formatTime: (dateString: string) => string;
+}
+
+interface ItineraryCardProps {
+  flight?: Flight;
+}
+
+export default function ItineraryCard({ flight }: ItineraryCardProps) {
+  const [showDetails, setShowDetails] = useState<boolean>(false);
+
+  // Helper functions for date formatting
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  const formatTime = (dateString: string): string => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  };
+
+  // Calculate actual duration between two dates
+  const calculateDuration = (startDate: string, endDate: string): string => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    // Calculate difference in milliseconds
+    const diffMs = end.getTime() - start.getTime();
+    
+    const hours = Math.floor(diffMs / (1000 * 60 * 60));
+    const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    
+    return `${hours}h ${minutes}m`;
+  };
+
+  // Calculate layover time
+  const calculateLayover = (flight1: Flight | FlightConnection, flight2: Flight | FlightConnection): string => {
+    const arrival = new Date(flight1.arrival_date);
+    const departure = new Date(flight2.departure_date);
+    
+    // Calculate difference in milliseconds
+    const diffMs = departure.getTime() - arrival.getTime();
+    
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    
+    return `${diffHours}h ${diffMinutes}m`;
+  };
+
+  const getCabinClass = (flight: Flight): string => {
     if (!flight.connections || flight.connections.length === 0) {
       return flight.cabin_class;
     }
@@ -23,23 +129,15 @@ export default function ItineraryCard({ flight }: { flight?: FlightType }) {
     return allCabinClasses.size > 1 ? "Mixed" : flight.cabin_class;
   };
 
-  const getTotalTripDuration = (flight: FlightType) => {
-    let totalHours = flight.travel_time_hours;
-    let totalMinutes = flight.travel_time_minutes;
-
-    if (flight.connections && flight.connections.length > 0) {
-      flight.connections.forEach((connection) => {
-        totalHours += connection.travel_time_hours;
-        totalMinutes += connection.travel_time_minutes;
-      });
-
-      if (totalMinutes >= 60) {
-        totalHours += Math.floor(totalMinutes / 60);
-        totalMinutes = totalMinutes % 60;
-      }
+  // Calculate total trip duration based on actual times
+  const getTotalTripDuration = (flight: Flight): string => {
+    if (!flight.connections || flight.connections.length === 0) {
+      return calculateDuration(flight.departure_date, flight.arrival_date);
     }
-
-    return getTotalDuration(totalHours, totalMinutes);
+    
+    // If there are connections, calculate from first departure to last arrival
+    const lastConnection = flight.connections[flight.connections.length - 1];
+    return calculateDuration(flight.departure_date, lastConnection.arrival_date);
   };
 
   if (!flight) {
@@ -80,12 +178,18 @@ export default function ItineraryCard({ flight }: { flight?: FlightType }) {
             <div className="text-sm text-muted-foreground flex flex-row items-center gap-2">
               <GiAirplaneArrival />
               <span>Arrival</span>
-              <span>{formatDate(flight.arrival_date)}</span>
+              <span>
+                {formatDate(
+                  flight.connections && flight.connections.length > 0
+                    ? flight.connections[flight.connections.length - 1].arrival_date
+                    : flight.arrival_date
+                )}
+              </span>
               <div className="flex flex-row items-center">
                 <Square className="w-2 h-2 bg-gray-300 mr-0.5" />
                 <span>
-                  {flight.connections.length > 0
-                    ? `${flight.connections.length}  stops`
+                  {flight.connections && flight.connections.length > 0
+                    ? `${flight.connections.length} stops`
                     : "Direct flight"}
                 </span>
               </div>
@@ -115,7 +219,15 @@ export default function ItineraryCard({ flight }: { flight?: FlightType }) {
           </div>
         </div>
       </div>
-      {showDetails && <Details flight={flight} />}
+      {showDetails && (
+        <Details 
+          flight={flight} 
+          calculateDuration={calculateDuration} 
+          calculateLayover={calculateLayover} 
+          formatDate={formatDate} 
+          formatTime={formatTime} 
+        />
+      )}
       <button
         onClick={() => setShowDetails(!showDetails)}
         className="bg-white w-fit float-end flex items-center justify-center gap-2 py-2 text-sm text-gray-500 px-4 rounded-sm border-border border"
@@ -134,10 +246,10 @@ export default function ItineraryCard({ flight }: { flight?: FlightType }) {
 const FlightSegment = ({
   flight,
   isLast,
-}: {
-  flight: FlightType;
-  isLast: boolean;
-}) => {
+  calculateDuration,
+  formatDate,
+  formatTime
+}: FlightSegmentProps) => {
   if (!flight) return null;
 
   return (
@@ -168,10 +280,7 @@ const FlightSegment = ({
 
             <div className="mt-2 flex items-center gap-2 text-sm">
               <span className="bg-blue-50 px-2 py-0.5 rounded">
-                {getTotalDuration(
-                  flight.travel_time_hours,
-                  flight.travel_time_minutes
-                )}
+                {calculateDuration(flight.departure_date, flight.arrival_date)}
               </span>
               <span className="text-gray-400">{flight.air_company.name}</span>
             </div>
@@ -221,24 +330,8 @@ const FlightSegment = ({
   );
 };
 
-const LayoverSegment = ({ flight }: { flight: FlightType }) => {
-  if (!flight) return null;
-
-  const calculateLayover = (arrivalDate: string, departureDate: string) => {
-    // String tarihleri Date objelerine çevir
-    const arrival = new Date(arrivalDate);
-    const departure = new Date(departureDate);
-
-    // İki tarih arasındaki farkı milisaniye cinsinden hesapla
-    const diff = departure.getTime() - arrival.getTime();
-
-    // Milisaniyeleri saat ve dakikaya çevir
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
-    return `${hours}h ${minutes}m`;
-
-  };
+const LayoverSegment = ({ prevFlight, nextFlight, calculateLayover }: LayoverSegmentProps) => {
+  if (!prevFlight || !nextFlight) return null;
 
   return (
     <div className="relative">
@@ -254,10 +347,10 @@ const LayoverSegment = ({ flight }: { flight: FlightType }) => {
         </div>
         <div className="flex items-center gap-2 ">
           <span className="font-semibold">
-            { calculateLayover(flight.arrival_date,flight.departure_date) }
+            {calculateLayover(prevFlight, nextFlight)}
           </span>
           <span className="text-muted-foreground">
-            in {flight.from_city} ({flight.from_airport_code})
+            in {prevFlight.to_city} ({prevFlight.to_airport_code})
           </span>
         </div>
       </div>
@@ -269,7 +362,13 @@ const LayoverSegment = ({ flight }: { flight: FlightType }) => {
   );
 };
 
-const Details = ({ flight }: { flight: FlightType }) => {
+const Details = ({ 
+  flight, 
+  calculateDuration, 
+  calculateLayover, 
+  formatDate, 
+  formatTime 
+}: DetailsProps) => {
   if (!flight) return null;
 
   return (
@@ -278,20 +377,28 @@ const Details = ({ flight }: { flight: FlightType }) => {
         <div className="">
           <FlightSegment
             flight={flight}
-            isLast={flight.connections.length === 0}
+            isLast={!flight.connections || flight.connections.length === 0}
+            calculateDuration={calculateDuration}
+            formatDate={formatDate}
+            formatTime={formatTime}
           />
-          {flight.connections.map((connection, index) => (
-            <>
+          {flight.connections && flight.connections.map((connection, index) => (
+            <React.Fragment key={`connection-group-${connection.id}`}>
               <LayoverSegment
                 key={`layover-${connection.id}`}
-                flight={connection}
+                prevFlight={flight}
+                nextFlight={connection}
+                calculateLayover={calculateLayover}
               />
               <FlightSegment
                 key={`connection-${connection.id}`}
                 flight={connection}
                 isLast={index === flight.connections.length - 1}
+                calculateDuration={calculateDuration}
+                formatDate={formatDate}
+                formatTime={formatTime}
               />
-            </>
+            </React.Fragment>
           ))}
         </div>
       </div>
