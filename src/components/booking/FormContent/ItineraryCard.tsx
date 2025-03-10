@@ -224,8 +224,20 @@ const FlightSegment = ({
 const LayoverSegment = ({ flight }: { flight: FlightType }) => {
   if (!flight) return null;
 
-  const getTotalDuration = (hours: number, minutes: number) => {
+  const calculateLayover = (arrivalDate: string, departureDate: string) => {
+    // String tarihleri Date objelerine çevir
+    const arrival = new Date(arrivalDate);
+    const departure = new Date(departureDate);
+
+    // İki tarih arasındaki farkı milisaniye cinsinden hesapla
+    const diff = departure.getTime() - arrival.getTime();
+
+    // Milisaniyeleri saat ve dakikaya çevir
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
     return `${hours}h ${minutes}m`;
+
   };
 
   return (
@@ -242,10 +254,7 @@ const LayoverSegment = ({ flight }: { flight: FlightType }) => {
         </div>
         <div className="flex items-center gap-2 ">
           <span className="font-semibold">
-            {getTotalDuration(
-              flight.travel_time_hours,
-              flight.travel_time_minutes
-            )}
+            { calculateLayover(flight.arrival_date,flight.departure_date) }
           </span>
           <span className="text-muted-foreground">
             in {flight.from_city} ({flight.from_airport_code})
